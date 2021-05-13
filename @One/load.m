@@ -5,6 +5,36 @@ function varargout = load(self, eid, varargin)
 % my_data = one.load(..., 'cache_dir', '~/Documents/tmpanalysis') %
 % my_data = one.load(..., 'download_only', True) % do not attempt to load data and return only structure information
 % temporarly overrides the default cache dir from the parameter file
+%% map data types to collection
+collection_dict = containers.Map({'_mflab_lickPiezoLeft.times',...
+'_mflab_lickPiezoRight.times',...
+'_mflab_valveLineLeft.times',...
+'_mflab_valveLineRight.times',...
+'_mflab_stimLineCues.times',...
+'_mflab_stimLineBaseline.times',...
+'_mflab_stimLineChange.times',...
+'_mflab_valveLinePuff.times',...
+'_mflab_framePulse.times',...
+'_mflab_driverLineLEDON.times',...
+'_mflab_driverLineCAM.times',...
+'_mflab_photodiode.times',...
+'_mflab_driverLineLED1.times',...
+'_mflab_driverLineLED2.times'},...
+{'raw_behavior_data',...
+'raw_behavior_data',......
+'raw_behavior_data',...
+'raw_behavior_data',...
+'raw_stimulus_data',...
+'raw_stimulus_data',...
+'raw_stimulus_data',...
+'raw_behavior_data',...
+'raw_widefieldca_data',...
+'raw_widefieldca_data',...
+'raw_widefieldca_data',...
+'raw_stimulus_data',...
+'raw_widefieldca_data',...
+'raw_widefieldca_data'});
+
 
 %% handle input arguments
 TYPO_PROOF = {  ...
@@ -17,6 +47,8 @@ TYPO_PROOF = {  ...
     'dtype', 'dataset_types';...
     };
 % substitute eventual typo with the proper parameter name
+disp('varargin')
+disp(varargin)
 for  ia = 1:2:length(varargin)
     it = find(strcmpi(varargin{ia}, TYPO_PROOF(:,1)),1);
     if isempty(it), continue; end
@@ -37,39 +69,58 @@ if ischar(dataset_types), dataset_types = {dataset_types}; end
 
 %% real stuff
 % eid could be a full URL or just an UUID, reformat as only UUID string
-eid = strsplit(eid, '/'); eid = eid{end};
+disp('eid')
+disp(eid)
+
+if contains(eid, '/')
+    eid = strsplit(eid, '/'); eid = eid{end};
+end
+
 if ~isempty(einfo)
     ses = einfo;
 else
+    disp('get statement')
     ses = self.alyx_client.get_session(eid);
 end
+
 % if the dtypes are empty, request full download and output a dclass
 if isempty(dataset_types)
-    dataset_types = ses.data_dataset_session_related.dataset_type;
+    %dataset_types = ses.data_dataset_session_related.dataset_type;
+    dataset_types = ses.dset_types;
     dclass_output = true;
 end
-% if there is only one dataset type, none of the fields of the structcture will be a cell
+% if there is only one dataset type, none of the fields of the structure will be a cell
 % make sure the output is a cell
-if all(structfun(@(x) ~iscell(x), ses.data_dataset_session_related))
-    ses.data_dataset_session_related = structfun(@(x) {x}, ses.data_dataset_session_related, 'UniformOutput', false);
-end
 
-[~, ises, iargin] = intersect(ses.data_dataset_session_related.dataset_type, dataset_types);
+%if all(structfun(@(x) ~iscell(x), ses.data_dataset_session_related))
+%if all(structfun(@(x) ~iscell(x), ses.dset_types))
+%    ses.data_dataset_session_related = structfun(@(x) {x}, ses.data_dataset_session_related, 'UniformOutput', false);
+%    ses.dset_types = structfun(@(x) {x}, ses.dset_types, 'UniformOutput', false);
+%end
 
+%[~, ises, iargin] = intersect(ses.data_dataset_session_related.dataset_type, dataset_types);
+[~, ises, iargin] =  intersect(ses.dset_types, dataset_types);;
 %% Create the data structure
+%    'dataset_id', ses.data_dataset_session_related.id(ises),...
+%    'dataset_type', ses.data_dataset_session_related.dataset_type(ises),...
+%    'url', ses.data_dataset_session_related.data_url(ises),...
+%    'dataset_type', ses.data_dataset_session_related.dataset_type(ises),...
+
 D = flatten(struct(...
-    'dataset_id', ses.data_dataset_session_related.id(ises),...
+    'dataset_id', repmat({eid}, length(ises),1),...
     'local_path', repmat({''}, length(ises), 1),...
-    'dataset_type', ses.data_dataset_session_related.dataset_type(ises),...
-    'url', ses.data_dataset_session_related.data_url(ises),...
+    'dataset_type', ses.dset_types(ises),...
+    'url', ses.url,...
     'eid', repmat({eid}, length(ises), 1 )), 'wrap_scalar', true);
+
 D.data = cell(length(ises), 1);
 % if none of the dataset exist, this will return NaN in an array that has
 % to be converted to cells
 if ~iscell(D.url) && all(isnan(D.url)), D.url = mat2cell(D.url, ones(length(D.url), 1) ); end
 
 %% Loop over each dataset and read if necessary
-for m = 1:length(ises)
+% iargin should equal number of dset types in intersect
+for m = 1:length(iargin)
     if isnan(D.url{m}),
         warning(['Session ' ses.subject ' Dataset is not available on server:' D.dataset_type{m}])
         continue
@@ -82,19 +133,22 @@ for m = 1:length(ises)
         local_path = [cache_dir strrep(url_server_side, '/', filesep)];
     end
     if ~dry_run && (force_replace || ~exist(local_path, 'file'))
-        disp(['Downloading ' local_path])
-        res =  mget(self.ftp, url_server_side, cache_dir);
-        assert(strcmp(res, local_path))
+        %res =  mget(self.ftp, url_server_side, cache_dir);
+        %assert(strcmp(res, local_path))
     end
     % loads the data
+    local_path = "/mnt/glynism/winstor/swc/mrsic_flogel/public/projects/" + ses.project + "/ALF/" + ses.subject + "/" + ses.start_time(1:10) + "/" +  sprintf('%03d', ses.number) + "/" + collection_dict(D.dataset_type{m}) + "/" + D.dataset_type{m};
+    disp("Downloading from " + local_path)
     D.local_path{m} = local_path;
     if download_only, continue, end
     [~, ~, ext] = fileparts(local_path);
-    switch ext
-        case '.npy'
-            D.data{m} = io.read.npy(local_path);
-        otherwise
-            warning(['Dataset extension not supported yet: *' ext])
+    if isfile(local_path + ".npy")
+        D.data{m} = io.read.npy(local_path + ".npy");
+    elseif isfile(local_path + ".bin")
+        C = fopen(local_path + ".bin");
+        D.data{m} = fread(C)
+    else
+        warning(['Dataset extension not supported yet: *'])
     end
 end
 % sort the output structure according to the input order
@@ -107,7 +161,9 @@ end
 if dclass_output
     varargout = {D};
 else
-    varargout = cell(length(dataset_types), 1);
-    varargout(sort(iargin)) = D.data(sort(nonzeros(id)));
+    %add dclass output = False functionality 
+    varargout = {D};
+    %varargout = cell(length(dataset_types), 1);
+    %varargout(sort(iargin)) = D.data(sort(nonzeros(id)));
 end
 

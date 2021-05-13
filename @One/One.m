@@ -30,15 +30,15 @@ classdef One
                 rethrow(err)
             end
             % Instantiate the FTP connection
-            try
-                self.ftp = ftp(self.par.FTP_DATA_SERVER(7:end), ...
-                               self.par.FTP_DATA_SERVER_LOGIN, ...
-                               self.par.FTP_DATA_SERVER_PWD);
-                binary(self.ftp);
-            catch err
-                warning(['Error ocurred while instantiating FTP client to FlatIron: ' err.message])
-                rethrow(err)
-            end
+            %try
+                %self.ftp = ftp(self.par.FTP_DATA_SERVER(7:end), ...
+                %               self.par.FTP_DATA_SERVER_LOGIN, ...
+                %               self.par.FTP_DATA_SERVER_PWD);
+                %binary(self.ftp);
+            %catch err
+                %warning(['Error ocurred while instantiating FTP client to FlatIron: ' err.message])
+                %rethrow(err)
+            %end
         end
     end
     

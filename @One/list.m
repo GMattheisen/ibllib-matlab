@@ -96,9 +96,11 @@ end
         session_info = self.alyx_client.get_session(eid);
         switch true
             case strcmp(keyword, 'dataset-type')
-                session_data_info = session_info.data_dataset_session_related;
-                session_data_info.eid = repmat({eid}, size(session_data_info.dataset_type,1),1);
-                dataset_list = unique(session_data_info.dataset_type);
+                %session_data_info = session_info.data_dataset_session_related;
+                session_data_info = session_info.dset_types;
+                %session_data_info.eid = repmat({eid}, size(session_data_info.dataset_type,1),1);
+                %dataset_list = unique(session_data_info.dataset_type);
+                dataset_list = unique(session_data_info);
                 varargout = {dataset_list, session_data_info};
             case strcmp(keyword, 'all')
                 varargout = {session_info, []};
