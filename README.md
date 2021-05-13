@@ -4,7 +4,7 @@
 https://ibllib.readthedocs.io/en/latest/
 
 ## Installation
-`git clone https://github.com/int-brain-lab/ibllib-matlab`
+`git clone https://github.com/GMattheisen/ibllib-matlab`
 And then set path recursively onto the library.
 
 ### @ONE library
