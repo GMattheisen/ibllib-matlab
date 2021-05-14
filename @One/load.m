@@ -58,8 +58,6 @@ TYPO_PROOF = {  ...
     'dtype', 'dataset_types';...
     };
 % substitute eventual typo with the proper parameter name
-disp('varargin')
-disp(varargin)
 for  ia = 1:2:length(varargin)
     it = find(strcmpi(varargin{ia}, TYPO_PROOF(:,1)),1);
     if isempty(it), continue; end
@@ -145,7 +143,13 @@ for m = 1:length(iargin)
         %assert(strcmp(res, local_path))
     end
     % loads the data
-    local_path = "/mnt/glynism/winstor/swc/mrsic_flogel/public/projects/" + ses.project + "/ALF/" + ses.subject + "/" + ses.start_time(1:10) + "/" +  sprintf('%03d', ses.number) + "/" + collection_dict(D.dataset_type{m}) + "/" + D.dataset_type{m};
+    if isunix()
+        user = getenv('USER')
+    else
+        user = getenv('username')
+    end
+    
+    local_path = "/mnt/" + user + "/winstor/swc/mrsic_flogel/public/projects/" + ses.project + "/ALF/" + ses.subject + "/" + ses.start_time(1:10) + "/" +  sprintf('%03d', ses.number) + "/" + collection_dict(D.dataset_type{m}) + "/" + D.dataset_type{m};
     disp("Downloading from " + local_path)
     D.local_path{m} = local_path;
     if download_only, continue, end
