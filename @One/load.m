@@ -182,18 +182,65 @@ for m = 1:length(iargin)
         user = getenv('username')
     end
 
-    local_path = "/mnt/" + user + "/winstor/swc/mrsic_flogel/public/projects/" + ses.project + "/ALF/" + ses.subject + "/" + ses.start_time(1:10) + "/" +  sprintf('%03d', ses.number) + "/" + collection_dict(D.dataset_type{m}) + "/" + D.dataset_type{m};
-    disp("Downloading from " + local_path)
-    D.local_path{m} = local_path;
+    file_path = "/mnt/" + user + "/winstor/swc/mrsic_flogel/public/projects/" + ses.project + "/ALF/" + ses.subject + "/" + ses.start_time(1:10) + "/" +  sprintf('%03d', ses.number) + "/" + collection_dict(D.dataset_type{m}) + "/" + D.dataset_type{m};
+    session_path = "/mnt/" + user + "/winstor/swc/mrsic_flogel/public/projects/" + ses.project + "/ALF/" + ses.subject + "/" + ses.start_time(1:10) + "/" +  sprintf('%03d', ses.number) + "/";
+    local_path = "/mnt/" + user + "/winstor/swc/mrsic_flogel/public/projects/" + ses.project + "/ALF/" + ses.subject + "/" + ses.start_time(1:10) + "/" +  sprintf('%03d', ses.number) + "/" + collection_dict(D.dataset_type{m}) + "/";
+    file_name = D.dataset_type{m}
+    disp("Downloading from " + file_path + ".bin")
+    D.file_path{m} = local_path;
     if download_only, continue, end
-    [~, ~, ext] = fileparts(local_path);
-    if isfile(local_path + ".npy")
-        D.data{m} = io.read.npy(local_path + ".npy");
-    elseif isfile(local_path + ".bin")
-        C = fopen(local_path + ".bin");
-        D.data{m} = fread(C)
-    else
-        warning(['Dataset extension not supported yet: *'])
+    [~, ~, ext] = fileparts(file_path);
+    
+    if contains(ses.project, 'IvOr')
+        if isfile(file_path + ".npy")
+            D.data{m} = io.read.npy(file_path + ".npy");
+        elseif isfile(file_path + ".bin")
+            C = fopen(file_path + ".bin");
+            D.data{m} = fread(C)
+        else
+            warning(['Dataset extension not supported yet: *'])
+        end
+    end
+    
+    if contains(ses.project, 'AnKh')
+        if isfile(file_path + ".npy")
+            D.data{m} = io.read.npy(file_path + ".npy");
+        elseif isfile(file_path + ".bin")
+            file = file_name + ".bin"
+            meta_file = "_mflab_taskSettings.raw.json"
+            fid = fopen(fullfile(session_path, meta_file), 'r');
+            raw = fread(fid,inf);
+            str = char(raw');
+            fclose(fid);
+            val = jsondecode(str);
+            %handling of raw Temporal Exp data
+            if isfield(val, 'NIDQ_META') & contains(file_name, 'raw')
+                disp('has nidq meta')
+                meta = val.NIDQ_META;
+                nSamp = Inf;    %read full session
+                %D.data{m} = ReadBin(0, nSamp, meta, file_name + ".bin", file_path);
+                samp0 = 0;
+                nChan = str2double(meta.nSavedChans);
+                nFileSamp = str2double(meta.fileSizeBytes) / (2 * nChan);
+                samp0 = max(samp0, 0);
+                nSamp = min(nSamp, nFileSamp - samp0);
+                sizeA = [nChan, nSamp];
+                fid = fopen(fullfile(local_path, file_name + ".bin"), 'rb');
+                disp(fid)
+                fseek(fid, samp0 * 2 * nChan, 'bof');
+                D.data{m} = fread(fid, sizeA, 'int16=>double');
+                fclose(fid);
+                
+            %handling of processed Temporal Exp data
+            else
+                disp('No nidq metadata')
+                disp(file_path + ".bin")
+                C = fopen(file_path + ".bin","r");
+                D.data{m} = fread(C)
+            end
+        else
+            warning(['Dataset extension not supported yet: *'])
+        end
     end
 end
 % sort the output structure according to the input order
