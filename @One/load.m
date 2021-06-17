@@ -215,7 +215,6 @@ for m = 1:length(iargin)
             val = jsondecode(str);
             %handling of raw Temporal Exp data
             if isfield(val, 'NIDQ_META') & contains(file_name, 'raw')
-                disp('has nidq meta')
                 meta = val.NIDQ_META;
                 nSamp = Inf;    %read full session
                 %D.data{m} = ReadBin(0, nSamp, meta, file_name + ".bin", file_path);
@@ -226,14 +225,11 @@ for m = 1:length(iargin)
                 nSamp = min(nSamp, nFileSamp - samp0);
                 sizeA = [nChan, nSamp];
                 fid = fopen(fullfile(local_path, file_name + ".bin"), 'rb');
-                disp(fid)
                 fseek(fid, samp0 * 2 * nChan, 'bof');
                 D.data{m} = fread(fid, sizeA, 'int16=>double');
                 fclose(fid);
-                
             %handling of processed Temporal Exp data
             else
-                disp('No nidq metadata')
                 disp(file_path + ".bin")
                 C = fopen(file_path + ".bin","r");
                 D.data{m} = fread(C)
