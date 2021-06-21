@@ -40,7 +40,8 @@ collection_dict = containers.Map({'_mflab_lickPiezoLeft.times',...
 '_mflab_driverLineLED1.raw.times',...
 '_mflab_driverLineLED2.raw.times',...
 '_mflab_clocks.raw.times',...
-'_mflab_running.raw.times'
+'_mflab_running.raw.times',...
+'_mflab_experimentSettings.raw'
 },...
 {'raw_behavior_data',...
 'raw_behavior_data',......
@@ -75,8 +76,9 @@ collection_dict = containers.Map({'_mflab_lickPiezoLeft.times',...
 'raw_stimulus_data',...
 'raw_widefieldca_data',...
 'raw_widefieldca_data',...
-'raw_behavior_data',......
-'raw_behavior_data'
+'raw_behavior_data',...
+'raw_behavior_data',...
+''
 });
 
 
@@ -138,7 +140,8 @@ end
 %end
 
 %[~, ises, iargin] = intersect(ses.data_dataset_session_related.dataset_type, dataset_types);
-[~, ises, iargin] =  intersect(ses.dset_types, dataset_types);;
+[~, ises, iargin] =  intersect(ses.dset_types, dataset_types);
+
 %% Create the data structure
 %    'dataset_id', ses.data_dataset_session_related.id(ises),...
 %    'dataset_type', ses.data_dataset_session_related.dataset_type(ises),...
@@ -153,13 +156,15 @@ D = flatten(struct(...
     'eid', repmat({eid}, length(ises), 1 )), 'wrap_scalar', true);
 
 D.data = cell(length(ises), 1);
+
 % if none of the dataset exist, this will return NaN in an array that has
 % to be converted to cells
 if ~iscell(D.url) && all(isnan(D.url)), D.url = mat2cell(D.url, ones(length(D.url), 1) ); end
-
 %% Loop over each dataset and read if necessary
 % iargin should equal number of dset types in intersect
+
 for m = 1:length(iargin)
+    
     if isnan(D.url{m}),
         warning(['Session ' ses.subject ' Dataset is not available on server:' D.dataset_type{m}])
         continue
@@ -177,9 +182,9 @@ for m = 1:length(iargin)
     end
     % loads the data
     if isunix()
-        user = getenv('USER')
+        user = getenv('USER');
     else
-        user = getenv('username')
+        user = getenv('username');
     end
 
     file_path = "/mnt/" + user + "/winstor/swc/mrsic_flogel/public/projects/" + ses.project + "/ALF/" + ses.subject + "/" + ses.start_time(1:10) + "/" +  sprintf('%03d', ses.number) + "/" + collection_dict(D.dataset_type{m}) + "/" + D.dataset_type{m};
@@ -190,7 +195,7 @@ for m = 1:length(iargin)
     D.file_path{m} = local_path;
     if download_only, continue, end
     [~, ~, ext] = fileparts(file_path);
-    
+
     if contains(ses.project, 'IvOr')
         if isfile(file_path + ".npy")
             D.data{m} = io.read.npy(file_path + ".npy");
@@ -230,10 +235,16 @@ for m = 1:length(iargin)
                 fclose(fid);
             %handling of processed Temporal Exp data
             else
-                disp(file_path + ".bin")
+                
                 C = fopen(file_path + ".bin","r");
-                D.data{m} = fread(C)
+                D.data{m} = fread(C)      
             end
+        elseif isfile(file_path + ".mat")
+            local_path = "/mnt/" + user + "/winstor/swc/mrsic_flogel/public/projects/" + ses.project + "/ALF/" + ses.subject + "/" + ses.start_time(1:10) + "/" +  sprintf('%03d', ses.number) + "/";
+            D.file_path{m} = local_path; 
+            file_path = "/mnt/" + user + "/winstor/swc/mrsic_flogel/public/projects/" + ses.project + "/ALF/" + ses.subject + "/" + ses.start_time(1:10) + "/" +  sprintf('%03d', ses.number) + "/" + D.dataset_type{m};
+            disp("Downloading from " + file_path + ".mat")
+            D.data{m} = load(file_path + ".mat");
         else
             warning(['Dataset extension not supported yet: *'])
         end
