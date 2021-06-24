@@ -224,7 +224,6 @@ for m = 1:length(iargin)
             D.data{m} = jsondecode(str);
             fclose(fid);  
         elseif isfile(D.file_path{m} + ".mat")
-            disp('mat path')
             D.data{m} = load(D.file_path{m} + ".mat");
         else
             warning(['Dataset extension not supported yet: *'])
@@ -261,16 +260,24 @@ for m = 1:length(iargin)
         elseif isfile(D.file_path{m} + ".mat")
             D.data{m} = load(D.file_path{m} + ".mat");
         elseif isfile(D.file_path{m} + ".json")
-            fid = fopen(D.file_path{m} + ".json");
-            raw = fread(fid, inf);
-            str = char(raw');
-            TF = convertCharsToStrings(extractAfter(str, '/winstor'));
-            original_file = "/mnt/" + user + "/winstor" + strtrim(TF);
-            fid = fopen(original_file);
-            raw = fread(fid, inf);
-            str = char(raw');
-            D.data{m} = jsondecode(str);
-            fclose(fid);
+            if contains(D.dataset_type{m}, 'taskSettings') | contains(D.dataset_type{m}, 'experimentSettings')
+                fid = fopen(D.file_path{m} + ".json");
+                raw = fread(fid, inf);
+                str = char(raw');
+                D.data{m} = jsondecode(str);
+                fclose(fid);  
+            else
+                fid = fopen(D.file_path{m} + ".json");
+                raw = fread(fid, inf);
+                str = char(raw');
+                TF = convertCharsToStrings(extractAfter(str, '/winstor'));
+                original_file = "/mnt/" + user + "/winstor" + strtrim(TF);
+                fid = fopen(original_file);
+                raw = fread(fid, inf);
+                str = char(raw');
+                D.data{m} = jsondecode(str);
+                fclose(fid);
+            end
         else
             warning(['Dataset extension not supported yet: *'])
         end
