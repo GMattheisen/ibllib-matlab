@@ -88,7 +88,7 @@ classdef AlyxClient
          function session_info = get_session(self, session_url)
              % session_info = ac.get_session('86e27228-8708-48d8-96ed-9aa61ab951db')
              % session_info = ac.get_session('https://test.alyx.internationalbrainlab.org/sessions/86e27228-8708-48d8-96ed-9aa61ab951db') 
-            if isempty(strfind(session_url, self.base_url))
+             if isempty(strfind(session_url, self.base_url))
                 session_url = [self.base_url '/sessions/' session_url];
             end
             session_info = self.get(session_url);

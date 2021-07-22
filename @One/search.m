@@ -34,6 +34,7 @@ SEARCH_TERMS = {  ...
     'tasks_protocol', 'task_protocol';...
     'task_protocols', 'task_protocol'
     };
+
 % substitute eventual typo with the proper parameter name
 for  ia = 1:2:length(varargin)
     it = find(strcmpi(varargin{ia}, SEARCH_TERMS(:,1)),1);
