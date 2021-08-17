@@ -72,6 +72,8 @@ collection_dict = containers.Map({'_mflab_lickPiezoLeft.times',...
 '_mflab_driverLineLED2.raw',...
 '_mflab_clocks.raw',...
 '_mflab_running.raw',...
+'_mflab_maskingLight.raw',...
+'_mflab_laser.raw',...
 },...
 {'raw_behavior_data/',...
 'raw_behavior_data/',......
@@ -138,6 +140,8 @@ collection_dict = containers.Map({'_mflab_lickPiezoLeft.times',...
 'raw_widefieldca_data/',...
 'raw_behavior_data/',...
 'raw_behavior_data/',...
+'raw_ephys_data',...
+'raw_ephys_data',...
 });
 
 file_conversion = containers.Map({'_mflab_lickPiezoLeft.times',...
@@ -174,7 +178,7 @@ file_conversion = containers.Map({'_mflab_lickPiezoLeft.times',...
 '_mflab_driverLineLED1.raw',...
 '_mflab_driverLineLED2.raw',...
 '_mflab_running.raw',...
-'_mflab_clocks.raw'
+'_mflab_clocks.raw',...
 },...
 {'achn0',...
 'achn1',...
@@ -210,7 +214,7 @@ file_conversion = containers.Map({'_mflab_lickPiezoLeft.times',...
 'achn12',...
 'achn13',...
 'xraw',...
-'_ts'
+'_ts',...
 });
 
 %% handle input arguments
@@ -322,40 +326,49 @@ for m = 1:length(iargin)
         %HHMMSS_tag = strcat(meta_content.SESSION_DATETIME(12:13), meta_content.SESSION_DATETIME(15:16), meta_content.SESSION_DATETIME(18:19));
         %settings_file = strcat(HHMMSS_tag, '.mat');
         fclose(fid);
-        for k = 1:length(meta_content.ORIGINAL_PATHS)
-            if D.dataset_type{m} == "_mflab_experimentSettings.raw"
-                str_to = meta_content.ORIGINAL_PATHS(k);
-                split_str = strsplit(str_to{1}, "/");
-                end_val = split_str{end};
-                expression = '[A-Z]+_[0-9]+_s[0-9]+_[0-9]+_[0-9]+.mat';
-                if regexp(end_val, expression) == 1
+        if contains(ses.project, 'IvOr') | contains(ses.subproject, 'All')
+            for k = 1:length(meta_content.ORIGINAL_PATHS)
+                if D.dataset_type{m} == "_mflab_experimentSettings.raw"
+                    str_to = meta_content.ORIGINAL_PATHS(k);
+                    split_str = strsplit(str_to{1}, "/");
+                    end_val = split_str{end};
+                    expression = '[A-Z]+_[0-9]+_s[0-9]+_[0-9]+_[0-9]+.mat';
+                    if regexp(end_val, expression) == 1
+                        path = meta_content.ORIGINAL_PATHS(k);
+                    end
+                elseif contains(meta_content.ORIGINAL_PATHS(k), file_conversion(D.dataset_type{m})) 
                     path = meta_content.ORIGINAL_PATHS(k);
                 end
-            elseif contains(meta_content.ORIGINAL_PATHS(k), file_conversion(D.dataset_type{m})) 
-                path = meta_content.ORIGINAL_PATHS(k);
+            end 
+        elseif contains(ses.subproject, 'Temporal')
+            if ~contains(D.dataset_type{m},"Settings") 
+                index = find(contains(meta_content.ORIGINAL_PATHS, 'nidq.bin'));
+            else
+                if contains(D.dataset_type{m},'_mflab_computerSettings')
+                    index0 = find(contains(meta_content.ORIGINAL_PATHS, 'computer_settings'));
+                elseif contains(D.dataset_type{m},'_mflab_sessionSettings')
+                    index0 = find(contains(meta_content.ORIGINAL_PATHS, 'session_settings'));
+                elseif contains(D.dataset_type{m},'_mflab_trialSettings')
+                    index0 = find(contains(meta_content.ORIGINAL_PATHS, 'trials'));
+                end
+                for k = 1:length(index0)
+                    if contains(D.dataset_type{m},'1') && ~contains(meta_content.ORIGINAL_PATHS(index0(k)), 'part')
+                        index = index0(k);
+                    elseif contains(D.dataset_type{m},'2') && contains(meta_content.ORIGINAL_PATHS(index0(k)), 'part2')
+                        index = index0(k);
+                    elseif contains(D.dataset_type{m},'3') && contains(meta_content.ORIGINAL_PATHS(index0(k)), 'part3')
+                        index = index0(k); 
+                    end
+                end
             end
-        end 
+            
+         
+            path = meta_content.ORIGINAL_PATHS(index);
+        end
         split_str = strsplit(path{1}, "/");
         str_wo_mount = strjoin(split_str([4:end]),"/");
         original_path = "/mnt/" + user + "/" + str_wo_mount;           
-        D.original_path{m} = original_path;
-        
-
-        %if isequal('Temporal expectation data', identifier{1})
-        %    original_path + 'Raw data'
-        %    original + 'Processed data'
-        %elseif isequal('All behavioral data', identifier{1})
-        %end
-        %dir(original_path)
-        
-        %data_files = dir(original_path);
-        %for k = 1:length(data_files)
-        %    if contains(data_files(k).name, file_conversion(D.dataset_type{m})) && contains(data_files(k).name, HHMMSS_tag) 
-        %        original_file = data_files(k).name
-        %    end
-        %end
-        %D.original_path{m} = original_path + original_file;
-        %fclose(fid);
+        D.original_path{m} = original_path;, 
     end 
 
     if contains(ses.project, 'IvOr')
@@ -391,7 +404,7 @@ for m = 1:length(iargin)
         if isfile(D.alf_path{m} + ".npy")
             D.data{m} = io.read.npy(D.alf_path{m} + ".npy");
         elseif isfile(D.alf_path{m} + ".bin")
-            file = D.dataset_type{m} + ".bin"
+            file = D.dataset_type{m} + ".bin";
             fid = fopen(fullfile(session_path, "_mflab_taskSettings.raw.json"), 'r');
             raw = fread(fid,inf);
             str = char(raw');
@@ -424,16 +437,24 @@ for m = 1:length(iargin)
                 D.data{m} = jsondecode(str);
                 fclose(fid);  
             else
-                fid = fopen(D.alf_path{m} + ".json");
-                raw = fread(fid, inf);
-                str = char(raw');
-                TF = convertCharsToStrings(extractAfter(str, '/winstor'));
-                original_file = "/mnt/" + user + "/winstor" + strtrim(TF);
-                fid = fopen(original_file);
-                raw = fread(fid, inf);
-                str = char(raw');
-                D.data{m} = jsondecode(str);
-                fclose(fid);
+                try 
+                    fid = fopen(D.alf_path{m} + ".json");
+                    raw = fread(fid, inf);
+                    str = char(raw');
+                    TF = convertCharsToStrings(extractAfter(str, '/winstor'));
+                    original_file = "/mnt/" + user + "/winstor" + strtrim(TF);
+                    fid = fopen(original_file);
+                    raw = fread(fid, inf);
+                    str = char(raw');
+                    D.data{m} = jsondecode(str);
+                    fclose(fid);
+                catch ME
+                    fid = fopen(D.alf_path{m} + ".json");
+                    raw = fread(fid, inf);
+                    str = char(raw');
+                    D.data{m} = jsondecode(str);
+                    fclose(fid);
+                end
             end
         else
             warning(['Dataset extension not supported yet: *'])

@@ -1,10 +1,5 @@
 function [DAQdata] = IvOr_extractDAQlines(files_source, token, imaged, ret)
-%Dir = '/home/mrsicflogellab/Desktop/Bit_test/';
-%files_source = Dir;
 exp = '.bin';
-%imaged = 2
-%ret = 1
-%token = '20190902_141027_IO_103_s1_';
 
 [myfiles] = listfiles(exp, token, files_source);
 
@@ -15,7 +10,6 @@ if ret == 0
 else
     Fname = f(1:25);
 end
-%disp(Fname) %20190902_141027_IO_103_s1
 
 file_path = strcat(p,filesep,Fname);
 
@@ -119,8 +113,6 @@ TIME.ts = fread(fid,TIME.nfrm,'double',TIME.frmsiz-TsPrec/8,'ieee-be'); % millis
 fseek(fid,3*TsPrec/8,'bof');
 TIME.i = fread(fid,TIME.nfrm,'double',TIME.frmsiz-TsPrec/8,'ieee-be'); % ite number
 fseek(fid,3*TsPrec/8+TsPrec/8,'bof');
-
-
 
 %  compute timestamps & dates, in LabView time and in
 %  Matlab time
@@ -263,7 +255,7 @@ case 1
 
     case 2
        
-            
+     
     DAQdata.Time=TIME;
     DAQdata.Running=AUXPOS;
     DAQdata.Lick=ADAT0;
