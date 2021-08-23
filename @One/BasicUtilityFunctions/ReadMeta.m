@@ -17,7 +17,7 @@
 % More complicated parsing of values is demonstrated in the
 % utility functions below.
 
-function [meta] = ReadMeta(meta_file, session_path)
+function [meta] = ReadMeta(binName, path)
 
    % Create the matching metafile name
     [dumPath,name,dumExt] = fileparts(binName);

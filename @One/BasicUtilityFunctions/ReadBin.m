@@ -12,12 +12,15 @@ function dataArray = ReadBin(samp0, nSamp, meta, binName, path)
 
     nFileSamp = str2double(meta.fileSizeBytes) / (2 * nChan);
     samp0 = max(samp0, 0);
-    nSamp = min(nSamp, nFileSamp - samp0);
 
+    nSamp = min(nSamp, nFileSamp - samp0);
     sizeA = [nChan, nSamp];
 
-    fid = fopen(fullfile(path, binName), 'rb');
+    fid = fopen(fullfile(binName), 'rb');
+
     fseek(fid, samp0 * 2 * nChan, 'bof');
+    dataArray = [1]
+
     dataArray = fread(fid, sizeA, 'int16=>double');
     fclose(fid);
 end % ReadBin

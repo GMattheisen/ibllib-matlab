@@ -74,6 +74,7 @@ collection_dict = containers.Map({'_mflab_lickPiezoLeft.times',...
 '_mflab_running.raw',...
 '_mflab_maskingLight.raw',...
 '_mflab_laser.raw',...
+'_mflab_nidq.raw'
 },...
 {'raw_behavior_data/',...
 'raw_behavior_data/',......
@@ -142,6 +143,7 @@ collection_dict = containers.Map({'_mflab_lickPiezoLeft.times',...
 'raw_behavior_data/',...
 'raw_ephys_data',...
 'raw_ephys_data',...
+''
 });
 
 file_conversion = containers.Map({'_mflab_lickPiezoLeft.times',...
@@ -361,8 +363,6 @@ for m = 1:length(iargin)
                     end
                 end
             end
-            
-         
             path = meta_content.ORIGINAL_PATHS(index);
         end
         split_str = strsplit(path{1}, "/");
@@ -404,28 +404,19 @@ for m = 1:length(iargin)
         if isfile(D.alf_path{m} + ".npy")
             D.data{m} = io.read.npy(D.alf_path{m} + ".npy");
         elseif isfile(D.alf_path{m} + ".bin")
-            file = D.dataset_type{m} + ".bin";
-            fid = fopen(fullfile(session_path, "_mflab_taskSettings.raw.json"), 'r');
-            raw = fread(fid,inf);
-            str = char(raw');
-            fclose(fid);
-            val = jsondecode(str);
-            if isfield(val, 'NIDQ_META') & contains(D.dataset_type{m}, 'raw')
-                meta = val.NIDQ_META;
-                nSamp = Inf;   
-                samp0 = 0;
-                nChan = str2double(meta.nSavedChans);
-                nFileSamp = str2double(meta.fileSizeBytes) / (2 * nChan);
-                samp0 = max(samp0, 0);
-                nSamp = min(nSamp, nFileSamp - samp0);
-                sizeA = [nChan, nSamp];
-                fid = fopen(fullfile(local_path, D.dataset_type{m} + ".bin"), 'rb');
-                fseek(fid, samp0 * 2 * nChan, 'bof');
-                D.data{m} = fread(fid, sizeA, 'int16=>double');
-                fclose(fid);
+            if contains(D.dataset_type{m},'nidq')
+                split_str = strsplit(D.original_path{m},'/')
+                split_path = strjoin(split_str([1:end-1]), '/')
+                binName = D.original_path{m}
+                path = strcat(split_path + "/")
+                meta = ReadMeta(binName, path);
+                [MN,MA,XA,DW] = ChannelCountsNI(meta);
+                NI_sample_rate = SampRate(meta);
+                nSamp =Inf;
+                dataArray = ReadBin(0, nSamp, meta, binName)
+                D.data{m} = dataArray;
             else
-                C = fopen(D.alf_path{m} + ".bin","r");
-                D.data{m} = fread(C)      
+                disp('no data load function available')
             end
         elseif isfile(D.alf_path{m} + ".mat")
             D.data{m} = load(D.alf_path{m} + ".mat");
