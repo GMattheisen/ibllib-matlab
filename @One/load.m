@@ -186,11 +186,11 @@ for m = 1:length(iargin)
         meta_content = jsondecode(str);
         fclose(fid);
         if contains(ses.project, 'IvOr') | contains(ses.subproject, 'All')
-            D.original_path{m} = OPIvOr(D.dataset_type{m}, meta_content.ORIGINAL_PATHS, user, m)
+            D.original_path{m} = OPIvOr(D.dataset_type{m}, meta_content.ORIGINAL_PATHS, user, m);
         elseif contains(ses.subproject, 'Temporal')
-            D.original_path{m} = OPAnKhT(D.dataset_type{m}, meta_content.ORIGINAL_PATHS, user, m)
+            D.original_path{m} = OPAnKhT(D.dataset_type{m}, meta_content.ORIGINAL_PATHS, user, m);
         elseif contains(ses.project, 'MoHa')
-            D.original_path{m} = OPMoHa(D.dataset_type{m}, meta_content.ORIGINAL_PATHS, user, m)
+            D.original_path{m} = OPMoHa(D.dataset_type{m}, meta_content.ORIGINAL_PATHS, user, m);
         end
     end    
  
@@ -202,7 +202,7 @@ for m = 1:length(iargin)
     elseif contains(ses.project, 'AnKh') && contains(ses.subproject, 'Temporal')
         D.data{m} = LoadAnKhTemp(D.alf_path{m}, m, D.dataset_type{m}, D.original_path{m});
     elseif contains(ses.project, 'IvOr') || contains(ses.subproject, 'All')
-        D.data{m} = LoadIvOr(D.alf_path{m}, m, D.dataset_type{m}, D.original_path{m})
+        D.data{m} = LoadIvOr(D.alf_path{m}, m, D.dataset_type{m}, D.original_path{m});
     end    
 end
 % sort the output structure according to the input order
