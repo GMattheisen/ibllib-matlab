@@ -178,7 +178,8 @@ for m = 1:length(iargin)
     if download_only, continue, end
     [~, ~, ext] = fileparts(D.alf_path{m});
     
-     %populate original paths
+    session = sprintf('%03d', ses.number);     
+    %populate original paths
     if ~contains(D.dataset_type{m}, '_mflab_taskSettings.raw') && ~isempty(D.dataset_type{m}) && isfile(session_path + "_mflab_taskSettings.raw.json")
         fid = fopen(session_path + "_mflab_taskSettings.raw.json");
         raw = fread(fid, inf);
@@ -186,7 +187,7 @@ for m = 1:length(iargin)
         meta_content = jsondecode(str);
         fclose(fid);
         if contains(ses.project, 'IvOr') | contains(ses.subproject, 'All')
-            D.original_path{m} = OPIvOr(D.dataset_type{m}, meta_content.ORIGINAL_PATHS, user, m);
+            D.original_path{m} = OPIvOr(D.dataset_type{m}, meta_content.ORIGINAL_PATHS, user, m, session);
         elseif contains(ses.subproject, 'Temporal')
             D.original_path{m} = OPAnKhT(D.dataset_type{m}, meta_content.ORIGINAL_PATHS, user, m);
         elseif contains(ses.project, 'MoHa')
@@ -196,7 +197,12 @@ for m = 1:length(iargin)
  
     %Data load
     if contains(D.dataset_type{m}, 'task')
-        D.data{m} = [];
+        fid = fopen(D.alf_path{m} + ".json");
+        raw = fread(fid, inf);
+        str = char(raw');
+        data = jsondecode(str);
+        fclose(fid);  
+        D.data{m} = data;
     elseif contains(ses.project, 'MoHa')
         D.data{m} = LoadMoHa(D.alf_path{m}, m, D.dataset_type{m}, D.original_path{m});
     elseif contains(ses.project, 'AnKh') && contains(ses.subproject, 'Temporal')
