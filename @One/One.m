@@ -3,7 +3,7 @@ classdef One
 % myone = One()
 % myone = One('alyx_url','https://test.alyx.internationalbrainlab.org',...
 %             'alyx_login','test_user','alyx_pwd','pass');
-    
+
     properties
         alyx_client
         ftp
