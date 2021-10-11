@@ -2,7 +2,7 @@ classdef AlyxClient
     properties (SetAccess=private)
         base_url = ''
         user = ''
-        timeout = 30
+        timeout = 100
         weboptions = []
     end
     

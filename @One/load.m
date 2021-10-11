@@ -191,7 +191,7 @@ for m = 1:length(iargin)
         elseif contains(ses.subproject, 'Temporal')
             D.original_path{m} = OPAnKhT(D.dataset_type{m}, meta_content.ORIGINAL_PATHS, user, m);
         elseif contains(ses.project, 'MoHa')
-            D.original_path{m} = OPMoHa(D.dataset_type{m}, meta_content.ORIGINAL_PATHS, user, m);
+            D.original_path{m} = OPMoHa(D.dataset_type{m}, str, user, m);
         end
     end    
  
