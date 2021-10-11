@@ -3,21 +3,21 @@
 %
 function data = LoadIvOr(alf_path, m, dataset_type, original_path)
     if isfile(alf_path + ".npy")
-        data = io.read.npy(alf_path + ".npy");
-    elseif isfile(alf_path + ".bin")
-        C = fopen(alf_path + ".bin");
+        data = io.read.npy(original_path);
+    elseif isfile(alf_path + ".bin") | isfile(alf_path + ".ini") 
+        C = fopen(original_path);
         data = fread(C);
     elseif isfile(alf_path + ".json")
-        fid = fopen(alf_path + ".json");
+        fid = fopen(original_path);
         raw = fread(fid, inf);
         str = char(raw');
         data = jsondecode(str);
         fclose(fid);  
     elseif isfile(alf_path + ".mat")
         try
-            data = load(alf_path + ".mat");
+            data = load(original_path);
         catch
-            fid = fopen(alf_path + ".mat", 'r');
+            fid = fopen(original_path, 'r');
             text_out = fscanf(fid, '%s');
             fclose(fid);
             split_str = strsplit(text_out,'/');

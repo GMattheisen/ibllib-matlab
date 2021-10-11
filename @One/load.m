@@ -187,7 +187,7 @@ for m = 1:length(iargin)
         meta_content = jsondecode(str);
         fclose(fid);
         if contains(ses.project, 'IvOr') | contains(ses.subproject, 'All')
-            D.original_path{m} = OPIvOr(D.dataset_type{m}, meta_content.ORIGINAL_PATHS, user, m, session);
+            D.original_path{m} = OPIvOr(D.dataset_type{m}, str, user, m, session);
         elseif contains(ses.subproject, 'Temporal')
             D.original_path{m} = OPAnKhT(D.dataset_type{m}, meta_content.ORIGINAL_PATHS, user, m);
         elseif contains(ses.project, 'MoHa')
