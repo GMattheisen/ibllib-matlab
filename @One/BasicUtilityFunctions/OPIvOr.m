@@ -2,7 +2,6 @@
 % Find Original Paths for IvOr
 %
 function original_path = OPIvOr(dataset_type, str, user, m, session)
-
     starting = strfind(str, 'ORIGINAL_PATH_DICT'); ending = strfind(str, 'ALF_SUBJECT_FOLDER');
     dict = str(starting:ending);
     type_index = strfind(dict, dataset_type);
