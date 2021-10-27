@@ -48,7 +48,6 @@ classdef One
     
     methods
         varargout = list(self, eid, varargin)
-        varargout = extractDAQlines(self, eid, imaged, ret)
         varargout = load(self, eid, varargin)
         varargout = load_fast(self, einfos, dataset_types)
         [eids, ses] = search(self, varargin)
