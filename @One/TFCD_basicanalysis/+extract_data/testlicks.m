@@ -1,43 +1,42 @@
 function [AllLicksON] = testlicks(eid)
 one = One();
-session_info = one.alyx_client.get_session(eid);
-
-lickthresh = 0.1;
-
+if class(eid) == 'cell'
+    if length(eid) == 1
+        eid = eid{1};
+    else 
+        disp('Too many eids supplied')
+    end
 end
+session_info = one.alyx_client.get_session(eid);
+lickthresh = 0.1;
 try
-[DAQDATA] = runDAQDATA(session_info.subject)
-% load([p.wheresave,'DAQDATA_',p.daqtoken,'.mat'],...
-%     'Stim1ON','Stim1OFF', 'Stim2ON','Stim2OFF',...
-%     'Valve','Valve2',...
-%     'Lick', 'Lick2');
-% load([p.wheredata,p.fsmtoken,'.mat'],'fsm','experiment_settings');
-% 
-% catch
-% error('No DAQDATA_ and/or STIM_ files found.')    
-% end
-% 
-% % Initiate array
-% CompletedTrials = 1:size(fsm.triallog,2);
-% 
-% % If session end failed (trials shown more than -1 off from fsm trials),
-% % include all trials saved but last.
-% if numel(CompletedTrials)>numel(Stim1ON+1); CompletedTrials = 1:numel(Stim1ON)-1; end
-% 
-% AllLicksON = utility_ds.init_emptyarraystruct(size(CompletedTrials,2));
-% 
-% % Limit to completed trials
-% Stim1ON = Stim1ON(CompletedTrials);
-% Stim1OFF = Stim1OFF(CompletedTrials);
-% 
-% % Nanpadd stimulus 2 onsets to match total number of trials
-% % Outcomes in which change point has been reached
-% pastChangePoint = ismember(fsm.trialoutcome(CompletedTrials),'Hit')|ismember(fsm.trialoutcome(CompletedTrials),'Miss')|ismember(fsm.trialoutcome(CompletedTrials),'Ref');
-% Stim2ONall = nan(size(Stim1ON));
-% Stim2OFFall = nan(size(Stim1ON));
-% Stim2ONall(pastChangePoint) = Stim2ON;
-% Stim2OFFall(pastChangePoint) = Stim2OFF;
-% 
+    [DAQDATA] = runDAQDATA(session_info.subject)
+    load(session_info.json.ALF_EXPERIMENT_SETTINGS,'fsm','experiment_settings');
+catch
+    error('No experiment settings file found')
+end
+
+% Initiate array
+CompletedTrials = 1:size(fsm.triallog,2);
+
+% If session end failed (trials shown more than -1 off from fsm trials),
+% include all trials saved but last.
+if numel(CompletedTrials)>numel(Stim1ON+1); CompletedTrials = 1:numel(Stim1ON)-1; end
+
+AllLicksON = utility_ds.init_emptyarraystruct(size(CompletedTrials,2));
+
+% Limit to completed trials
+Stim1ON = Stim1ON(CompletedTrials);
+Stim1OFF = Stim1OFF(CompletedTrials);
+
+% Nanpadd stimulus 2 onsets to match total number of trials
+% Outcomes in which change point has been reached
+pastChangePoint = ismember(fsm.trialoutcome(CompletedTrials),'Hit')|ismember(fsm.trialoutcome(CompletedTrials),'Miss')|ismember(fsm.trialoutcome(CompletedTrials),'Ref');
+Stim2ONall = nan(size(Stim1ON));
+Stim2OFFall = nan(size(Stim1ON));
+Stim2ONall(pastChangePoint) = Stim2ON;
+Stim2OFFall(pastChangePoint) = Stim2OFF;
+end
 % if numel(find(pastChangePoint)) ~= numel(find(~isnan(Stim2ON))); error('Number of changes does not match.');end
 % 
 % % FIND LICKS

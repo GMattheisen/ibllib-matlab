@@ -1,4 +1,4 @@
-function DAQdata = p_struct(eid)
+function [p] = create_p(eid)
 one = One();
 session_info = one.alyx_client.get_session(eid);
 [Dir,file,~]=fileparts(session_info.json.ORIGINAL_PATHS{1});

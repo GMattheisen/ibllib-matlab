@@ -1,4 +1,4 @@
-function [DAQdata] = IvOr_extractDAQlines(files_source, token, imaged, ret)
+function [DAQdata] = extractDAQlines(files_source, token, imaged, ret)
 exp = '.bin';
 
 [myfiles] = listfiles(exp, token, files_source);
@@ -6,7 +6,7 @@ exp = '.bin';
 if ~isempty (myfiles)
     [p,f,~]=fileparts(myfiles{1});
 if ret == 0
-    Fname = f(1:end-7);
+    Fname = f(1:end-8);
 else
     Fname = f(1:25);
 end
@@ -66,7 +66,7 @@ end
 
 INISTM.fname = [files_source, Fname,'_log.ini'];
 %inifile downloaded from mathworks
-[INISTM.keys,INISTM.sections,INISTM.subsections] = inifile (INISTM.fname,'readall');
+[INISTM.keys,INISTM.sections,INISTM.subsections] = utility_IO.inifile (INISTM.fname,'readall');
 %disp(INISTM)
 %fname: '/home/mrsicflogellab/Desktop/Bit_test/20190902_141027_IO_103_s1_log.ini'
 %           keys: {25×4 cell}
@@ -174,7 +174,7 @@ clear AUXPOS;
         inputs.plot = 0;        
 
         
-        [ticksCorrected, ticks] = correctPotato(inputs);
+        [ticksCorrected, ticks] = transform_data.correctPotato(inputs);
         
         
         AUXPOS.speedDePotatoe = (ticksCorrected*inputs.wheelfactor)/(100/1000);  % difference from previous tick count, times wheel dimensions(2Pi*r/nticks (r=10,nticks=4000), ends up in [m/s]
