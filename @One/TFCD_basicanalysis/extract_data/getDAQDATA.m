@@ -1,5 +1,12 @@
 function [DAQdata] = getDAQDATA(eid)
 one = One();
+if class(eid) == 'cell'
+    if length(eid) == 1
+        eid = eid{1};
+    else 
+        disp('Too many eids supplied')
+    end
+end
 ToAnalysis = datetime('now');
 LineTresh = 2;
 

@@ -6,13 +6,11 @@ exp = '.bin';
 if ~isempty (myfiles)
     [p,f,~]=fileparts(myfiles{1});
 if ret == 0
-    Fname = f(1:end-8);
+    Fname = f(1:end-7);
 else
     Fname = f(1:25);
 end
-
 file_path = strcat(p,filesep,Fname);
-
 switch imaged
 case 0
     % Possible channels

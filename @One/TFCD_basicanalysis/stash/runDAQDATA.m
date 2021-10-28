@@ -1,13 +1,15 @@
 function [DAQdata] = runDAQDATA(animal)
 one = One();
+if class(animal) == 'char'
+    animal = {animal};
+end
 protocolfield = 'v0.1';
 sessionfield = 'allsessions';
 overwrite = false;
 for cA = 1:size(animal,2)
-    eids = search(self, 'subject', animal(cA));
+    eids = one.search('subject', animal(cA));
     session_list = cell2table({0 0 0 0 0 0 0 0 0 0 0 0 0}, 'VariableNames', {'eid', 'SessionToken', 'IMGtoken', 'DAQtoken', 'FSMtoken','ServerMountPoint', 'DAQpath', 'IMGpath', 'ServerSavePath', 'SesID', 'OnServer', 'Protocol', 'Depth'});
     for eid = 1:size(eids)
-        disp(eids{eid})
         session_info = one.alyx_client.get_session(eids{eid});
         [Dir,file,~]=fileparts(session_info.json.ORIGINAL_PATHS{1});
         files_source = append(Dir, '/');
@@ -36,7 +38,9 @@ for cA = 1:size(animal,2)
     %% loop sessions
     for cS = 1:size(session_list,1)     
         try    
-            [DAQdata] = extract_data.getDAQDATA(self, session_list(cS,:).eid);
+            disp('try')
+            disp(session_list(cS,:).eid)
+            [DAQdata] = getDAQDATA(session_list(cS,:).eid);
         catch
             disp('Failed session')
         end
