@@ -98,7 +98,7 @@ for m = 1:length(iargin)
 
     % loads the data
     session_path = "/mnt/" + user + "/winstor/swc/mrsic_flogel/public/projects/" + ses.project + "/ALF/" + ses.subject + "/" + ses.start_time(1:10) + "/" +  sprintf('%03d', ses.number) + "/";
-    local_path = session_path + FindCollection(D.dataset_type{m});
+    local_path = session_path + utility_IO.FindCollection(D.dataset_type{m});
     D.alf_path{m} = local_path + D.dataset_type{m};
     D.local_path{m} = local_path;
     
