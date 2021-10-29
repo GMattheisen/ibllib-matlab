@@ -1,7 +1,7 @@
 function [DAQdata] = extractDAQlines(files_source, token, imaged, ret)
 exp = '.bin';
 
-[myfiles] = listfiles(exp, token, files_source);
+[myfiles] = utility_IO.listfiles(exp, token, files_source);
 
 if ~isempty (myfiles)
     [p,f,~]=fileparts(myfiles{1});
