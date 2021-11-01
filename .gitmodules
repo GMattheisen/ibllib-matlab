@@ -1,0 +1,3 @@
+[submodule "@One/@One/basicutilityfunctions"]
+	path = @One/@One/basicutilityfunctions
+	url = https://github.com/GMattheisen/ibllib-matlab.git
