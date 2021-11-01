@@ -1,0 +1,9 @@
+Contains basic functions commonly used in various contexts.
+
++utility_ds: manipulation of data structures
+
++utility_IO: read/write funtions
+
++utility_plot: plotting functions
+
++utility_ts: manipulation of timeseries data
