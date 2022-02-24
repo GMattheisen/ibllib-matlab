@@ -5,6 +5,7 @@ function data = LoadIvOr(alf_path, m, dataset_type, original_path)
     if isfile(alf_path + ".npy")
         data = io.read.npy(original_path);
     elseif isfile(alf_path + ".bin") | isfile(alf_path + ".ini") 
+        disp(original_path)
         C = fopen(original_path);
         data = fread(C);
     elseif isfile(alf_path + ".json")
