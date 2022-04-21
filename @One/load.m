@@ -98,7 +98,11 @@ for m = 1:length(iargin)
 
     % loads the data
     session_path = "/mnt/" + user + "/winstor/swc/mrsic_flogel/public/projects/" + ses.project + "/ALF/" + ses.subject + "/" + ses.start_time(1:10) + "/" +  sprintf('%03d', ses.number) + "/";
-    local_path = session_path + utility_IO.FindCollection(D.dataset_type{m});
+    if contains(ses.project, 'SaMe')
+        local_path = session_path;
+    else
+        local_path = session_path + utility_IO.FindCollection(D.dataset_type{m});
+    end
     D.alf_path{m} = local_path + D.dataset_type{m};
     D.local_path{m} = local_path;
     
@@ -116,6 +120,8 @@ for m = 1:length(iargin)
             D.original_path{m} = OPAnKhT(D.dataset_type{m}, str, user, m);
         elseif contains(ses.project, 'MoHa')
             D.original_path{m} = OPMoHa(D.dataset_type{m}, str, user, m);
+        elseif contains(ses.project, 'SaMe')
+            D.original_path{m} = OPSaMe(D.dataset_type{m}, str, user, m);
         end
     end
     
@@ -135,6 +141,8 @@ for m = 1:length(iargin)
             D.data{m} = LoadAnKhTemp(D.alf_path{m}, m, D.dataset_type{m}, D.original_path{m});
         elseif contains(ses.project, 'IvOr') | contains(ses.subproject, 'All')
             D.data{m} = LoadIvOr(D.alf_path{m}, m, D.dataset_type{m}, D.original_path{m});
+        elseif contains(ses.project, 'SaMe')
+            D.data{m} = LoadSaMe(D.alf_path{m}, m, D.dataset_type{m}, D.original_path{m});
         end    
     end
 end
