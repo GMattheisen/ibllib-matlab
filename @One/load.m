@@ -98,7 +98,7 @@ for m = 1:length(iargin)
 
     % loads the data
     session_path = "/mnt/" + user + "/winstor/swc/mrsic_flogel/public/projects/" + ses.project + "/ALF/" + ses.subject + "/" + ses.start_time(1:10) + "/" +  sprintf('%03d', ses.number) + "/";
-    if contains(ses.project, 'SaMe')
+    if contains(ses.project, 'SaMe') | contains(ses.project, 'MiLo')
         local_path = session_path;
     else
         local_path = session_path + utility_IO.FindCollection(D.dataset_type{m});
@@ -122,7 +122,8 @@ for m = 1:length(iargin)
             D.original_path{m} = OPMoHa(D.dataset_type{m}, str, user, m);
         elseif contains(ses.project, 'SaMe')
             D.original_path{m} = OPSaMe(D.dataset_type{m}, str, user, m);
-        end
+        elseif contains(ses.project, 'MiLo')
+            D.original_path{m} = OPMiLo(D.dataset_type{m}, str, user, m);        end
     end
     
     [~, ~, ext] = fileparts(D.alf_path{m});
@@ -143,7 +144,8 @@ for m = 1:length(iargin)
             D.data{m} = LoadIvOr(D.alf_path{m}, m, D.dataset_type{m}, D.original_path{m});
         elseif contains(ses.project, 'SaMe')
             D.data{m} = LoadSaMe(D.alf_path{m}, m, D.dataset_type{m}, D.original_path{m});
-        end    
+        elseif contains(ses.project, 'MiLo')
+            D.data{m} = LoadMiLo(D.alf_path{m}, m, D.dataset_type{m}, D.original_path{m});        end    
     end
 end
 % sort the output structure according to the input order
